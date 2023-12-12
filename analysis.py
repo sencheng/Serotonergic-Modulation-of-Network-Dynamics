@@ -2,7 +2,12 @@
 # -- Preprocessing and analysis of the simulation results
 ################################################################################
 
-import pickle
+import numpy as np;
+import pylab as pl;
+import os, pickle
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+from scipy.stats import linregress
 from imp import reload
 import defaultParams;
 
@@ -68,13 +73,13 @@ class simdata():
 
     def __init__(self, fl_path):
 
-        fl = open(fl_path, 'rb');
-        self.data = pickle.load(fl);
+        fl = open(fl_path, 'rb')
+        self.data = pickle.load(fl)
         fl.close()
         self.trans_interval = np.array([0, Ttrans])
         self.base_interval = self.trans_interval + Tblank
         self.stim_interval = self.base_interval + Tstim
-        self.evoke_interval = self.stim_interval + Tblank
+        self.evoke_interval = self.stim_interval + Tblank + np.array([20., -520.])
         self.ids_included = np.arange(1, N + 1)
         self.neuron_ids = np.arange(1, N + 1)
         self.fr_exc = {}
@@ -96,7 +101,8 @@ class simdata():
         self.w_itoe = self.data['W_ItoE']
         self.w_itoi = self.data['W_ItoI']
         self.inc_dec_sub_ids = {'inc': {},
-                                'dec': {}}
+                                'dec': {},
+                                'neu': {}}
 
     def select_neurons(self, pert, interval, min_fr):
         fr = self._get_ind_spike_count(pert, interval)
@@ -272,6 +278,24 @@ class simdata():
                                                  'inh': inc_ids[inc_ids > NE]}
             self.inc_dec_sub_ids['dec'][pert] = {'exc': dec_ids[dec_ids <= NE],
                                                  'inh': dec_ids[dec_ids > NE]}
+            self.inc_dec_sub_ids['neu'][pert] = {'exc': neu_ids[neu_ids <= NE],
+                                                 'inh': neu_ids[neu_ids > NE]}
+
+    def get_pop_fr_subset(self, ids, dt=10.):
+        e_f_pert, i_f_pert = {}, {}
+        for pert in nn_stim_rng:
+            print("\nComputing population firing rate for a subset with pert={:.0f}%".format(pert / NI * 100))
+            e_f, i_f, t = self._get_pop_fr_pert_subset(pert, dt, ids)
+            e_f_pert[pert] = e_f
+            i_f_pert[pert] = i_f
+        # self.fr_exc['time'] = t
+        # self.fr_inh['time'] = t
+        return e_f_pert, i_f_pert
+
+    def get_pop_fr_incdec(self, dt=10.):
+        self.fr_exc_inc, self.fr_inh_inc = self.get_pop_fr_subset(self.inc_dec_sub_ids['inc'])
+        self.fr_exc_dec, self.fr_inh_dec = self.get_pop_fr_subset(self.inc_dec_sub_ids['dec'])
+        self.fr_exc_neu, self.fr_inh_neu = self.get_pop_fr_subset(self.inc_dec_sub_ids['neu'])
 
     def get_baseline_change(self):
         fr_stim_diff_exc = self.baseline_change_exc.copy()
@@ -288,29 +312,30 @@ class simdata():
                                 fr_base[self.ids_included[self.ids_included > NE] - 1].mean())
         return fr_stim_diff_exc, fr_stim_diff_inh
 
-    def get_pop_fr_subset(self, ids, dt=10.):
-        e_f_pert, i_f_pert = {}, {}
+    def get_gain_for_plot(self):
+        ev_resp_exc = self.ev_resp_exc.copy()
+        ev_resp_inh = self.ev_resp_inh.copy()
         for pert in nn_stim_rng:
-            print("\nComputing population firing rate for a subset with pert={:.0f}%".format(pert / NI * 100))
-            e_f, i_f, t = self._get_pop_fr_pert_subset(pert, dt, ids)
-            e_f_pert[pert] = e_f
-            i_f_pert[pert] = i_f
-        # self.fr_exc['time'] = t
-        # self.fr_inh['time'] = t
-        return e_f_pert, i_f_pert
-
-    def get_pop_fr_incdec(self, dt=10.):
-        self.fr_exc_inc, self.fr_inh_inc = self.get_pop_fr_subset(self.inc_dec_sub_ids['inc'])
-        self.fr_exc_dec, self.fr_inh_dec = self.get_pop_fr_subset(self.inc_dec_sub_ids['dec'])
+            fr_base = self._get_gain_pert(pert, self.base_interval + np.array([20., 0.]))
+            fr_evoke = self._get_gain_pert(pert, self.evoke_interval)
+            fr_diff = fr_evoke - fr_base
+            self.ev_resp_exc[pert] = fr_diff[self.ids_included[self.ids_included <= NE] - 1]
+            self.ev_resp_inh[pert] = fr_diff[self.ids_included[self.ids_included > NE] - 1]
+            ev_resp_exc[pert] = (fr_evoke[self.ids_included[self.ids_included <= NE] - 1].mean() /
+                                 fr_base[self.ids_included[self.ids_included <= NE] - 1].mean())
+            ev_resp_inh[pert] = (fr_evoke[self.ids_included[self.ids_included > NE] - 1].mean() /
+                                 fr_base[self.ids_included[self.ids_included > NE] - 1].mean())
+        return ev_resp_exc, ev_resp_inh
 
     def get_gain(self):
         for pert in nn_stim_rng:
-            fr_base = self._get_gain_pert(pert, self.stim_interval)
+            fr_base = self._get_gain_pert(pert, self.stim_interval + np.array([20., 0.]))
             fr_evoke = self._get_gain_pert(pert, self.evoke_interval)
             fr_diff = fr_evoke - fr_base
             self.ev_resp_exc[pert] = fr_diff[self.ids_included[self.ids_included <= NE] - 1]
             self.ev_resp_inh[pert] = fr_diff[self.ids_included[self.ids_included > NE] - 1]
         return self.ev_resp_exc, self.ev_resp_inh
+
 
     def plot_pop_fr(self, ax):
 
@@ -350,6 +375,10 @@ class simdata():
         elif dec_inc == 'dec':
             arr_inh = self.fr_inh_dec
             arr_exc = self.fr_exc_dec
+        elif dec_inc == 'neu':
+            arr_inh = self.fr_inh_neu
+            arr_exc = self.fr_exc_neu
+
         else:
             pass
         if isinstance(ax, np.ndarray):

@@ -2,8 +2,7 @@
 # -- Default set of parameters
 ################################################################################
 
-import numpy as np
-import pylab as pl
+import numpy as np; import pylab as pl; import time, sys, os
 import matplotlib
 
 ## the number of cores to be used for simulations
@@ -15,8 +14,7 @@ n_cores = 1
 res_dir = "SimulationFiles"
 fig_initial = "Figures"
 sim_suffix = "-LIF-rEcoef{:.2f}-rIcoef{:.2f}-{}-{}-N{}-EvFr{:.0f}-EvPr{:.0f}-EvPop{}-Nmodel{}-Ntr{}-I_pert{:.0f}-E_pert{:.0f}-I_act{:.2f}-E_act{:.2f}-II{:.1f}-bkgfac{:.2f}-II{:.2f}"
-# The path to the generated raw data and the generated figures.
-data_dir = "/work/mohammad/5HT2A/simdata/research-pert-strength/inh/"
+data_dir = "/work/mohammad/5HT2A/simdata/fr-baseline-disrupt-balance-with-pert/"
 fig_dir = data_dir
 #------------- neuron params
 
@@ -52,13 +50,13 @@ r_bkg_i = 223.#434.#27218.
 
 r_bkg_ca1 = 0.
 # rate of perturbation (sp/s) for Be=0.1
-r_stim_inh = 0.#27218.-r_bkg_i#17876.-r_bkg_i#400.
-r_stim_exc = 0.#30526.-r_bkg_e#20000.-r_bkg_e
+r_stim_inh = 27218.-r_bkg_i#17876.-r_bkg_i#400.
+r_stim_exc = 30526.-r_bkg_e#20000.-r_bkg_e
 # # rate of perturbation (sp/s) for Be=0.2
 # r_stim_inh = 29094.-r_bkg_i#400.  
 # r_stim_exc = 16238.-r_bkg_e  
 # rate of optoactivation
-r_act_inh = 100.#100.
+r_act_inh = 0.#50.
 r_act_exc = 0.#50.#0.
 evoked_input = 100.
 bkg_fr_scale = 0.6
@@ -150,7 +148,7 @@ p_ItoE = 1.0
 p_ItoI = 1.0
 
 # range of the size of Inh perturbations
-nn_stim_rng = (np.array([0, .25, .5, .75, 1])*NI).astype('int')
+nn_stim_rng = (np.array([0.0, 1.0])*NI).astype('int')
 #nn_stim_rng = (np.array([0, .25, 0.5])*NI).astype('int')
 #nn_stim_rng = (np.array([0.15, .4, .6, .8, .9])*NI).astype('int')
 

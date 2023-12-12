@@ -2,7 +2,8 @@
 # -- Simulating Exc-Inh spiking networks in response to inhibitory perturbation
 ################################################################################
 
-import time, os, sys, pickle
+import numpy as np; import pylab as pl; import time, os, sys, pickle
+from scipy.stats import norm
 from imp import reload
 import defaultParams; reload(defaultParams); from defaultParams import *;
 import searchParams; reload(searchParams); from searchParams import *;
@@ -297,12 +298,12 @@ def simulate(job_id, num_jobs, sim_suffix):
             
             if pert_type == 'spike':
                 print("Perturbation type {}".format(pert_type))
-                r_extra[NE:NE+nn_stim] = r_stim_inh#*np.random.uniform(0.8, 1.2, size=nn_stim)#np.random.normal(loc=1, scale=0.2, size=nn_stim)
-                r_extra[0:int(nn_stim*NE/NI)] = r_stim_exc
-                r_extra_inh[NE:NE+nn_stim] = r_stim_inh
-                r_extra_inh[0:int(nn_stim*NE/NI)] = r_stim_inh
-                r_extra_exc[NE:NE+nn_stim] = r_stim_exc + r_act_inh*EI_probchg_comb[ij1]
-                r_extra_exc[0:int(nn_stim*NE/NI)] = r_stim_exc + r_act_exc#*EE_probchg_comb[ij1]
+                r_extra[NE:NE+int(nn_stim*EI_probchg_comb[ij1])] = r_stim_inh#*np.random.uniform(0.8, 1.2, size=nn_stim)#np.random.normal(loc=1, scale=0.2, size=nn_stim)
+                r_extra[0:int(nn_stim*NE/NI*EE_probchg_comb[ij1])] = r_stim_exc
+                r_extra_inh[NE:NE+int(nn_stim*EI_probchg_comb[ij1])] = r_stim_inh
+                r_extra_inh[0:int(nn_stim*NE/NI*EI_probchg_comb[ij1])] = r_stim_inh
+                r_extra_exc[NE:NE+int(nn_stim*EE_probchg_comb[ij1])] = r_stim_exc + r_act_inh
+                r_extra_exc[0:int(nn_stim*NE/NI*EE_probchg_comb[ij1])] = r_stim_exc + r_act_exc
             elif pert_type == 'current':
                 print("Perturbation type {}".format(pert_type))
                 I_extra[NE:NE+nn_stim] = I_stim_inh
@@ -318,8 +319,8 @@ def simulate(job_id, num_jobs, sim_suffix):
             rr1_i = np.hstack((r_bkg_i*np.ones(NE),
                                r_bkg_i*np.ones(NI)))
             rr1 = [rr1_e, rr1_i]
-            rr2_e = rr1_e + r_extra_exc
-            rr2_i = rr1_i + r_extra_inh
+            rr2_e = rr1_e + r_extra_exc#*EE_probchg_comb[ij1]
+            rr2_i = rr1_i + r_extra_inh#*EI_probchg_comb[ij1]
             rr2 = [rr2_e, rr2_i]
             
             I_bkg_e = I_bkg#*bkg_chg_comb[ij1]

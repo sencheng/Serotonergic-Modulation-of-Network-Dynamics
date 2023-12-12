@@ -3,6 +3,7 @@
 # -- Tools for simulating networks of spiking neurons using the NEST simulator
 ################################################################################
 
+import numpy as np; import pylab as pl; import time, os, sys
 from imp import reload
 import defaultParams; reload(defaultParams); from defaultParams import *;
 import nest
