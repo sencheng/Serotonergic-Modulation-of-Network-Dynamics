@@ -1,4 +1,4 @@
-**This branch generates *Extended Data Fig. 11 panel a*, which is presented in "Gain control of sensory input across polysynaptic circuitries in visual cortex
+**This branch generates *Extended Data Fig. 11 panel b*, which is presented in "Gain control of sensory input across polysynaptic circuitries in visual cortex
 by a single G protein-coupled receptor type (5-HT2A)".**
 
 **Steps to run simulations and generate figures:**
