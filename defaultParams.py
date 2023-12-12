@@ -16,7 +16,7 @@ res_dir = "SimulationFiles"
 fig_initial = "Figures"
 sim_suffix = "-LIF-rEcoef{:.2f}-rIcoef{:.2f}-{}-{}-N{}-EvFr{:.0f}-EvPr{:.0f}-EvPop{}-Nmodel{}-Ntr{}-I_pert{:.0f}-E_pert{:.0f}-I_act{:.2f}-E_act{:.2f}-II{:.1f}-bkgfac{:.2f}-II{:.2f}"
 # The path to the generated raw data and the generated figures.
-data_dir = "/work/mohammad/5HT2A/simdata/research-pert-strength/exc/"
+data_dir = "/work/mohammad/5HT2A/simdata/research-pert-strength/inh/"
 fig_dir = data_dir
 #------------- neuron params
 
@@ -58,8 +58,8 @@ r_stim_exc = 0.#30526.-r_bkg_e#20000.-r_bkg_e
 # r_stim_inh = 29094.-r_bkg_i#400.  
 # r_stim_exc = 16238.-r_bkg_e  
 # rate of optoactivation
-r_act_inh = 0.#100.
-r_act_exc = 50.#50.#0.
+r_act_inh = 100.#100.
+r_act_exc = 0.#50.#0.
 evoked_input = 100.
 bkg_fr_scale = 0.6
 bkg_chg_factor_dict = {-.2: 1.3*bkg_fr_scale,

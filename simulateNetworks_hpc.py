@@ -301,8 +301,8 @@ def simulate(job_id, num_jobs, sim_suffix):
                 r_extra[0:int(nn_stim*NE/NI)] = r_stim_exc
                 r_extra_inh[NE:NE+nn_stim] = r_stim_inh
                 r_extra_inh[0:int(nn_stim*NE/NI)] = r_stim_inh
-                r_extra_exc[NE:NE+nn_stim] = r_stim_exc + r_act_inh#*EI_probchg_comb[ij1]
-                r_extra_exc[0:int(nn_stim*NE/NI)] = r_stim_exc + r_act_exc*EE_probchg_comb[ij1]
+                r_extra_exc[NE:NE+nn_stim] = r_stim_exc + r_act_inh*EI_probchg_comb[ij1]
+                r_extra_exc[0:int(nn_stim*NE/NI)] = r_stim_exc + r_act_exc#*EE_probchg_comb[ij1]
             elif pert_type == 'current':
                 print("Perturbation type {}".format(pert_type))
                 I_extra[NE:NE+nn_stim] = I_stim_inh

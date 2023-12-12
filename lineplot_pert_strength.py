@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from searchParams import *
 from defaultParams import *
 
-processing_perturbed_pop = 'exc'
+processing_perturbed_pop = 'inh'
 
 # path to the file where `diff_data` exists. This file is generated after running `figures_hpc.py`
 PATH = f'/work/mohammad/5HT2A/simdata/research-pert-strength/{processing_perturbed_pop}'
